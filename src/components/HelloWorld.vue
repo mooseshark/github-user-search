@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <div>{{ search.login }}</div>
+    <div v-for="node in search.nodes" v-bind:key="node.login">{{ node.login }}: {{ node.email }}</div>
 
   </div>
 </template>

@@ -1,5 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
+import DataTable from './components/DataTable'
+import ItemsPerPageDropdown from './components/ItemsPerPageDropdown'
+import Pagination from './components/Pagination'
 
  import VueApollo from "vue-apollo";
 
@@ -11,13 +14,12 @@ import {IntrospectionFragmentMatcher} from 'apollo-cache-inmemory';
 import introspectionQueryResultData from '../src/fragmentTypes.json';
 const fragmentMatcher = new IntrospectionFragmentMatcher({introspectionQueryResultData});
 
- Vue.use(VueApollo);
+Vue.use(VueApollo);
 
 Vue.config.productionTip = false
 const getHeaders = () => {
- const headers = {};
-  // const token = window.localStorage.getItem('apollo-token');
-  const token = 'e8158d27f17652e9530c73de0962d1ee560b75c2';
+  const headers = {};
+  const token = '';
   if (token) {
     headers.authorization = `Bearer ${token}`;
   }
@@ -43,6 +45,12 @@ const client = new ApolloClient({
 const apolloProvider = new VueApollo({
   defaultClient: client,
 });
+
+export {
+  DataTable,
+  ItemsPerPageDropdown,
+  Pagination
+}
 
 new Vue({
   apolloProvider,
