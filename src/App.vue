@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <h3 class="title">v-Datatable example</h3>
+    <h3 class="title">GitHub User Search</h3>
+
     <!-- Datatable -->
     <DataTable
       :header-fields="headerFields"
@@ -14,19 +15,6 @@
       @on-update="dtUpdateSort"
       track-by="login"
     >
-     <!-- Action button slot -->
-      <input
-        slot="actions"
-        slot-scope="props"
-        type="button"
-        class="btn btn-info"
-        value="Edit"
-        @click="dtEditClick(props)"
-      >
-
-      <input type="text" slot="updated:header" value="Custom updated" />
-
-      <span slot="createdHeader">Custom Created</span>
 
       <!-- Pagination component as a slot, but could be drag out from Database element -->
       <Pagination
@@ -263,7 +251,7 @@ import gql from 'graphql-tag';
 
 export const USER_SEARCH = gql`
   query getUsers {
-    search(query: "mooseshark", type: USER, first: 10) {
+    search(query: "moose", type: USER, first: 10) {
        nodes {
          ... on User {
            id
@@ -276,9 +264,8 @@ export const USER_SEARCH = gql`
            websiteUrl
            avatarUrl
            anyPinnableItems
-           bio
            bioHTML
-           company
+           companyHTML
            followers {
              totalCount
            }
@@ -302,7 +289,6 @@ export const USER_SEARCH = gql`
              message
              emojiHTML
            }
-           companyHTML
            issues {
              totalCount
            }
@@ -317,18 +303,6 @@ export const USER_SEARCH = gql`
        userCount
      }
   }`;
-
-const addZero = value => (`0${value}`).slice(-2)
-
-const formatDate = value => {
-  if (value) {
-    const dt = new Date(value)
-    return `${addZero(dt.getDate())}/${addZero(
-      dt.getMonth() + 1
-    )}/${dt.getFullYear()}`
-  }
-  return ''
-}
 
 const initialData = [];
 
@@ -374,7 +348,7 @@ export default {
           sortable: true
         },
         {
-          name: 'status',
+          name: 'status.status',
           label: 'Status',
           sortable: true
         },
@@ -389,12 +363,12 @@ export default {
           sortable: true
         },
         {
-          name: 'twitterUsername',
+          name: 'twitterUsername.twitter',
           label: 'Twitter Handle',
           sortable: true
         },
         {
-          name: 'websiteUrl',
+          name: 'websiteUrl.url',
           label: 'Website',
           sortable: true
         },
@@ -439,13 +413,6 @@ export default {
           label: 'Total Starred Repositories',
           sortable: true
         },
-        {
-          name: 'created',
-          customHeader: 'createdHeader',
-          label: 'Created',
-          sortable: true,
-          format: formatDate
-        },
         '__slot:actions'
       ],
       type: "private",
@@ -487,8 +454,6 @@ export default {
     },
   },
   methods: {
-    dtEditClick: props => alert(`Click props: ${JSON.stringify(props)}`),
-
     dtUpdateSort: function ({ sortField, sort }) {
       const sortedData = orderBy(initialData, [sortField], [sort])
       const start = (this.currentPage - 1) * this.itemsPerPage

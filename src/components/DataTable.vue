@@ -45,7 +45,7 @@
       <!-- end spinner slot -->
       <!-- table rows -->
       <template v-else-if="data.length">
-        <tr v-for="(item, index) in data" :key="index" :class="[css.tbodyTr, `row-${index}`]">
+        <tr v-for="(item, index) in data" :key="index" :class="[css.tbodyTr, `row-${index}`]" v-on:dblclick="navigateToProfile(item)">
           <td
             v-for="(key, columnIndex) in headers"
             :key="`${index}-${key.name}`"
@@ -55,20 +55,37 @@
             <img v-if="isFieldSpecial(key.name)&& extractArgs(key.name) === 'avatarUrl'"
               v-bind:src="item[extractArgs(key.name)]" style="width:100px"/>
 
+            <span
+              v-if="isFieldHTML(key.name)"
+              v-html="item[extractID(key.name)]"
+            />
+
+            <span
+              v-if="key.name === 'status.status'"
+              v-html="getStatus(item.status)"
+            />
+
+            <a v-if="isFieldURL(key.name)" v-bind:href="item[extractID(key.name)]" rel="noopener noreferrer" target="_blank">
+              {{ appendHTTP(item[extractID(key.name)]) }}
+            </a>
+
+            <a v-if="isFieldTwitter(key.name)" v-bind:href="createTwitterLink(item[extractID(key.name)])" rel="noopener noreferrer" target="_blank">
+              {{ item[extractID(key.name)] }}
+            </a>
+
             <slot v-if="isTotalCount(key.name)">{{ extractTotalCount(item[extractTotalCountID(key.name)]) }}</slot>
 
             <slot v-if="key.name === 'repositories.totalDiskUsage'">{{ extractDiskUsage(item) }}</slot>
 
-            <span
-              v-if="isFieldHTML(key.name)"
-              v-html="item[extractHtmlID(key.name)]"
-            />
-
-            <slot
+            <input
               v-if="isFieldSpecial(key.name) && extractArgs(key.name) === 'actions'"
               :name="extractActionID(key.name)"
               :row-data="item"
               :row-index="index"
+              type="button"
+              class="btn btn-info"
+              value="View Profile"
+              @click="navigateToProfile(item)"
             />
 
             <template v-else-if="key.format">{{ key.format(item[key.name]) }}</template>
@@ -260,7 +277,11 @@ export default {
 
     isFieldSpecial: field => field.indexOf('__') > -1,
 
-    isFieldHTML: field => field.split('.')[1],
+    isFieldHTML: field => field.split('.')[1] === 'html' ? true : false,
+
+    isFieldURL: field => field.split('.')[1] === 'url' ? true : false,
+
+    isFieldTwitter: field => field.split('.')[1] === 'twitter' ? true : false,
 
     isTotalCount: field => field.indexOf('totalCount') > -1,
 
@@ -271,9 +292,9 @@ export default {
       return list.length === 3 ? list[2] : 'actions';
     },
 
-    extractHtmlID: string => {
+    extractID: string => {
       const list = string.split('.');
-      return list[1] === 'html' ? list[0] : null;
+      return list.length === 2 ? list[0] : null;
     },
 
     extractAvatarID: string => {
@@ -284,6 +305,28 @@ export default {
     extractTotalCountID: string => {
       const list = string.split('.');
       return list[1] === 'totalCount' ? list[0] : string;
+    },
+
+    appendHTTP: string => {
+      if(!string) return ;
+      if(string.indexOf('https://') === -1 || string.indexOf('http://') === -1){
+          string = 'http://' + string;
+      }
+      return string;
+    },
+
+    createTwitterLink: string => {
+      return string ? 'https://twitter.com/' + string : null;
+    },
+
+    navigateToProfile: function(item){
+      const profile = item.url;
+      if(profile)
+        window.open(profile, "_blank", "noopener");
+    },
+
+    getStatus: function(item){
+      return item ? item.message + ' ' + item.emojiHTML : null;
     },
 
     extractTotalCount: function(item){
