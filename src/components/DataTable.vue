@@ -52,9 +52,17 @@
             :class="[css.tbodyTd, `column-${columnIndex}`]"
             :style="getColumnWidth(key)">
 
+            <img v-if="isFieldSpecial(key.name)&& extractArgs(key.name) === 'avatarUrl'"
+              v-bind:src="item[extractArgs(key.name)]" style="width:100px"/>
+
             <slot v-if="isTotalCount(key.name)">{{ extractTotalCount(item[extractTotalCountID(key.name)]) }}</slot>
 
             <slot v-if="key.name === 'repositories.totalDiskUsage'">{{ extractDiskUsage(item) }}</slot>
+
+            <span
+              v-if="isFieldHTML(key.name)"
+              v-html="item[extractHtmlID(key.name)]"
+            />
 
             <slot
               v-if="isFieldSpecial(key.name) && extractArgs(key.name) === 'actions'"
@@ -63,14 +71,6 @@
               :row-index="index"
             />
 
-
-
-            <slot
-              v-if="key.customElement"
-              :row-data="item"
-              :row-index="index"
-              :name="customElementName(key)"
-            />
             <template v-else-if="key.format">{{ key.format(item[key.name]) }}</template>
             <template v-else>{{ item[key.name] }}</template>
           </td>
@@ -91,6 +91,7 @@
           <div :class="css.footer">
             <slot name="ItemsPerPage"/>
             <slot name="pagination"/>
+            <span style="width:200px"> User Count: {{ userCount }} </span>
           </div>
         </th>
       </tr>
@@ -164,6 +165,10 @@ export default {
     onlyShowOrderedArrow: {
       type: Boolean,
       default: false
+    },
+    userCount: {
+      type: Number,
+      default: 0
     }
   },
 
@@ -255,6 +260,8 @@ export default {
 
     isFieldSpecial: field => field.indexOf('__') > -1,
 
+    isFieldHTML: field => field.split('.')[1],
+
     isTotalCount: field => field.indexOf('totalCount') > -1,
 
     extractArgs: string => string.split(':')[1],
@@ -262,6 +269,16 @@ export default {
     extractActionID: string => {
       const list = string.split(':');
       return list.length === 3 ? list[2] : 'actions';
+    },
+
+    extractHtmlID: string => {
+      const list = string.split('.');
+      return list[1] === 'html' ? list[0] : null;
+    },
+
+    extractAvatarID: string => {
+      const list = string.split(':');
+      return list.length === 3 ? list[2] : 'avatarUrl';
     },
 
     extractTotalCountID: string => {

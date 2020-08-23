@@ -7,6 +7,7 @@
       :sort-field="sortField"
       :sort="sort"
       :data="search.nodes || []"
+      :user-count="userCount"
       :is-loading="isLoading"
       :css="datatableCss"
       not-found-msg="Items not found"
@@ -262,7 +263,7 @@ import gql from 'graphql-tag';
 
 export const USER_SEARCH = gql`
   query getUsers {
-    search(query: "moose", type: USER, first: 10) {
+    search(query: "mooseshark", type: USER, first: 10) {
        nodes {
          ... on User {
            id
@@ -344,7 +345,6 @@ export default {
       // graphql query
       query: USER_SEARCH,
       error(error) {
-        console.log(error);
         this.error = JSON.stringify(error.message);
       }
     }
@@ -352,11 +352,7 @@ export default {
   data: function () {
     return {
       headerFields: [
-        {
-          name: 'avatarUrl',
-          label: '',
-          sortable: false
-        },
+        '__slot:avatarUrl',
         {
           name: 'login',
           label: 'Login Name',
@@ -368,7 +364,7 @@ export default {
           sortable: true
         },
         {
-          name: 'bioHTML',
+          name: 'bioHTML.html',
           label: 'Bio',
           sortable: false
         },
@@ -388,7 +384,7 @@ export default {
           sortable: true
         },
         {
-          name: 'companyHTML',
+          name: 'companyHTML.html',
           label: 'Company',
           sortable: true
         },
@@ -452,7 +448,6 @@ export default {
         },
         '__slot:actions'
       ],
-      //data: initialData.slice(0, 10),
       type: "private",
       filterType: "all",
       search: [],
@@ -484,6 +479,12 @@ export default {
       currentPage: 1,
       totalItems: 16
     }
+  },
+  computed: {
+    userCount: function() {
+      const userCount = this.search.userCount;
+      return userCount ? userCount : 0;
+    },
   },
   methods: {
     dtEditClick: props => alert(`Click props: ${JSON.stringify(props)}`),
