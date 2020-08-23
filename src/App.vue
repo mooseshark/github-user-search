@@ -2,6 +2,10 @@
   <div id="app">
     <h3 class="title">GitHub User Search</h3>
 
+    <SearchBar
+      @onSearch="onSearch($event)"
+    />
+
     <!-- Datatable -->
     <DataTable
       :header-fields="headerFields"
@@ -245,13 +249,14 @@ import Spinner from 'vue-simple-spinner'
 import DataTable from '../src/components/DataTable.vue'
 import ItemsPerPageDropdown from '../src/components/ItemsPerPageDropdown.vue'
 import Pagination from '../src/components/Pagination.vue'
+import SearchBar from '../src/components/SearchBar.vue'
 import orderBy from 'lodash.orderby'
 
 import gql from 'graphql-tag';
 
 export const USER_SEARCH = gql`
-  query getUsers {
-    search(query: "moose", type: USER, first: 10) {
+  query getUsers ($searchTerm: String!, $recordsToReturn: Int!) {
+    search(query: $searchTerm, type: USER, first: $recordsToReturn) {
        nodes {
          ... on User {
            id
@@ -312,12 +317,16 @@ export default {
     DataTable,
     ItemsPerPageDropdown,
     Pagination,
+    SearchBar,
     Spinner
   },
   apollo: {
     search: {
-      // graphql query
       query: USER_SEARCH,
+      variables: {
+        searchTerm: '',
+        recordsToReturn: 10
+      },
       error(error) {
         this.error = JSON.stringify(error.message);
       }
@@ -395,7 +404,7 @@ export default {
         },
         {
           name: 'repositories.totalDiskUsage',
-          label: 'Total Repositories Disk Usage',
+          label: 'Total Repository Disk Usage',
           sortable: true
         },
         {
@@ -454,6 +463,13 @@ export default {
     },
   },
   methods: {
+    onSearch: function (searchTerm) {
+      this.$apollo.queries.search.refetch({
+        searchTerm: searchTerm,
+        recordsToReturn: 10
+     });
+    },
+
     dtUpdateSort: function ({ sortField, sort }) {
       const sortedData = orderBy(initialData, [sortField], [sort])
       const start = (this.currentPage - 1) * this.itemsPerPage
