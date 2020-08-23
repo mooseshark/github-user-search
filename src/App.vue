@@ -11,7 +11,7 @@
       :css="datatableCss"
       not-found-msg="Items not found"
       @on-update="dtUpdateSort"
-      track-by="firstName"
+      track-by="login"
     >
      <!-- Action button slot -->
       <input
@@ -22,7 +22,6 @@
         value="Edit"
         @click="dtEditClick(props)"
       >
-      <a href="#" slot="actionFirst" slot-scope="props" @click.prevent="actionFirstClick(props)">Actions 2</a>
 
       <input type="text" slot="updated:header" value="Custom updated" />
 
@@ -261,9 +260,9 @@ import orderBy from 'lodash.orderby'
 
 import gql from 'graphql-tag';
 
-export const GET_MY_TODOS = gql`
-  query getMyTodos {
-    search(query: "pump", type: USER, first: 10) {
+export const USER_SEARCH = gql`
+  query getUsers {
+    search(query: "moose", type: USER, first: 10) {
        nodes {
          ... on User {
            id
@@ -343,7 +342,7 @@ export default {
   apollo: {
     search: {
       // graphql query
-      query: GET_MY_TODOS,
+      query: USER_SEARCH,
       error(error) {
         console.log(error);
         this.error = JSON.stringify(error.message);
@@ -354,18 +353,94 @@ export default {
     return {
       headerFields: [
         {
+          name: 'avatarUrl',
+          label: '',
+          sortable: false
+        },
+        {
           name: 'login',
-          label: 'First Name',
+          label: 'Login Name',
           sortable: true
         },
         {
-          name: 'lastName',
-          label: 'Last Name',
+          name: 'name',
+          label: 'Name',
           sortable: true
         },
         {
-          name: 'dob',
-          label: 'Data of Birght',
+          name: 'bioHTML',
+          label: 'Bio',
+          sortable: false
+        },
+        {
+          name: 'location',
+          label: 'Location',
+          sortable: true
+        },
+        {
+          name: 'status',
+          label: 'Status',
+          sortable: true
+        },
+        {
+          name: 'email',
+          label: 'E-mail',
+          sortable: true
+        },
+        {
+          name: 'companyHTML',
+          label: 'Company',
+          sortable: true
+        },
+        {
+          name: 'twitterUsername',
+          label: 'Twitter Handle',
+          sortable: true
+        },
+        {
+          name: 'websiteUrl',
+          label: 'Website',
+          sortable: true
+        },
+
+        {
+          name: 'followers.totalCount',
+          label: 'Total Followers',
+          sortable: true
+        },
+        {
+          name: 'packages.totalCount',
+          label: 'Total Packages',
+          sortable: true
+        },
+        {
+          name: 'projects.totalCount',
+          label: 'Total Projects',
+          sortable: true
+        },
+        {
+          name: 'repositories.totalCount',
+          label: 'Total Repositories',
+          sortable: true
+        },
+        {
+          name: 'repositories.totalDiskUsage',
+          label: 'Total Repositories Disk Usage',
+          sortable: true
+        },
+        {
+          name: 'issues.totalCount',
+          label: 'Total Issues',
+          sortable: true
+        },
+        {
+          name: 'following.totalCount',
+          label: 'Total Following',
+          sortable: true
+        },
+        {
+          name: 'starredRepositories.totalCount',
+          label: 'Total Starred Repositories',
           sortable: true
         },
         {
@@ -375,13 +450,6 @@ export default {
           sortable: true,
           format: formatDate
         },
-        {
-          name: 'updated',
-          customHeader: true,
-          sortable: true,
-          format: formatDate
-        },
-        '__slot:actions:actionFirst',
         '__slot:actions'
       ],
       //data: initialData.slice(0, 10),
@@ -410,7 +478,7 @@ export default {
       },
       isLoading: false,
       sort: 'asc',
-      sortField: 'firstName',
+      sortField: 'login',
       listItemsPerPage: [5, 10, 20, 50, 100],
       itemsPerPage: 10,
       currentPage: 1,
@@ -445,10 +513,6 @@ export default {
 
     updateCurrentPage: function (currentPage) {
       this.currentPage = currentPage
-    },
-
-    actionFirstClick: (params) => {
-      alert(JSON.stringify(params))
     }
   }
 }

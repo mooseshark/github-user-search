@@ -30,19 +30,6 @@
             </div>
           </div>
           <!-- end header custom header -->
-          <!-- especial field -->
-          <div
-            v-if="isFieldSpecial(item.name) && extractArgs(item.name) === 'checkboxes'"
-            :class="css.thWrapperCheckboxes"
-          >
-            <input
-              type="checkbox"
-              :class="css.checkboxHeader"
-              :checked="checkedAll"
-              @click="checkAll"
-            >
-          </div>
-          <!-- end especial field -->
         </th>
       </tr>
     </thead>
@@ -64,21 +51,20 @@
             :key="`${index}-${key.name}`"
             :class="[css.tbodyTd, `column-${columnIndex}`]"
             :style="getColumnWidth(key)">
+
+            <slot v-if="isTotalCount(key.name)">{{ extractTotalCount(item[extractTotalCountID(key.name)]) }}</slot>
+
+            <slot v-if="key.name === 'repositories.totalDiskUsage'">{{ extractDiskUsage(item) }}</slot>
+
             <slot
               v-if="isFieldSpecial(key.name) && extractArgs(key.name) === 'actions'"
               :name="extractActionID(key.name)"
               :row-data="item"
               :row-index="index"
             />
-            <input
-              v-if="isFieldSpecial(key.name) && extractArgs(key.name) === 'checkboxes'"
-              type="checkbox"
-              :class="css.checkbox"
-              :row-data="item"
-              :row-index="index"
-              :checked="checkedAll || isCheckedItem(item)"
-              @click="checkItem(item, $event)"
-            >
+
+
+
             <slot
               v-if="key.customElement"
               :row-data="item"
@@ -160,12 +146,9 @@ export default {
         tfootTr: 'tfoot-tr',
         footer: 'footer',
         thWrapper: 'th-wrapper',
-        thWrapperCheckboxes: 'th-wrapper-checkboxes',
         arrowsWrapper: 'arrows-wrapper',
         arrowUp: 'arrow-up',
         arrowDown: 'arrow-down',
-        checkboxHeader: 'checkbox-header',
-        checkbox: 'checkbox',
         notFoundTr: 'not-found-tr',
         notFoundTd: 'not-found-td'
       })
@@ -189,9 +172,7 @@ export default {
       sortedField: this.sortField,
       sortedDir: this.sort,
       notFoundMessage: this.notFoundMsg,
-      loading: this.isLoading,
-      checkedAll: false,
-      itemsChecked: []
+      loading: this.isLoading
     }
   },
 
@@ -263,37 +244,6 @@ export default {
       }
     },
 
-    checkAll: function () {
-      this.checkedAll = !this.checkedAll
-      if (this.checkedAll) {
-        this.itemsChecked = this.data
-      } else {
-        this.itemsChecked = []
-      }
-      this.$emit('on-check-all', this.itemsChecked)
-    },
-
-    checkItem: function (item) {
-      const found = this.itemsChecked.find(
-        itemChecked => itemChecked[this.trackBy] === item[this.trackBy]
-      )
-      if (found) {
-        this.itemsChecked = this.itemsChecked.filter(
-          itemChecked => itemChecked[this.trackBy] !== item[this.trackBy]
-        )
-        this.$emit('on-unchecked-item', item)
-      } else {
-        this.itemsChecked = [...this.itemsChecked, item]
-        this.$emit('on-checked-item', item)
-      }
-    },
-
-    isCheckedItem: function (item) {
-      return !!this.itemsChecked.find(
-        itemChecked => itemChecked[this.trackBy] === item[this.trackBy]
-      )
-    },
-
     isFieldSortable: function (field) {
       const foundHeader = this.headerFields.find(item => item.name === field)
       return foundHeader && foundHeader.sortable
@@ -305,18 +255,30 @@ export default {
 
     isFieldSpecial: field => field.indexOf('__') > -1,
 
+    isTotalCount: field => field.indexOf('totalCount') > -1,
+
     extractArgs: string => string.split(':')[1],
 
     extractActionID: string => {
-      const list = string.split(':')
-      return list.length === 3 ? list[2] : 'actions'
+      const list = string.split(':');
+      return list.length === 3 ? list[2] : 'actions';
+    },
+
+    extractTotalCountID: string => {
+      const list = string.split('.');
+      return list[1] === 'totalCount' ? list[0] : string;
+    },
+
+    extractTotalCount: function(item){
+      return item ? item.totalCount.toString() : '0';
+    },
+
+    extractDiskUsage: function(item){
+      return item.repositories ? item.repositories.totalDiskUsage.toString() + ' KB' : '0 KB';
     },
 
     getColumnWidth: function (item) {
       if (this.tableHeight) {
-        if (item.name === '__slot:checkboxes') {
-          return { width: '50px' }
-        }
         return { width: item.width || this.defaultColumnWidth }
       }
     },
