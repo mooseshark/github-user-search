@@ -19,7 +19,7 @@ Vue.use(VueApollo);
 Vue.config.productionTip = false
 const getHeaders = () => {
   const headers = {};
-  const token = '';
+  const token = '40c1e3464be6121efbda1ec4853d09e3c6fac631';
   if (token) {
     headers.authorization = `Bearer ${token}`;
   }

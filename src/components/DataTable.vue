@@ -1,5 +1,5 @@
 <template>
-  <table :class="['v-datatable-light', css.table]">
+  <table :class="['v-datatable-light', css.table]" style="margin:10px 10px 10px 10px">
     <thead :class="css.thead" :style="theadStyle">
       <tr :class="css.theadTr">
         <th
@@ -11,25 +11,8 @@
           <!-- header free text -->
           <div v-if="!isFieldSpecial(item.name) && !item.customHeader" :class="[css.thWrapper, `header-column-${columnIndex}`]" @click="orderBy(item.name)">
             {{ item.label }}
-            <div v-if="item.sortable" :class="arrowsWrapper(item.name, css.arrowsWrapper)">
-              <div v-if="showOrderArrow(item, 'desc')" :class="css.arrowUp" />
-              <div v-if="showOrderArrow(item, 'asc')" :class="css.arrowDown" />
-            </div>
           </div>
           <!-- end header free text -->
-          <!-- header custom header -->
-          <div v-if="!isFieldSpecial(item.name) && item.customHeader" :class="[css.thWrapper, `header-column-${columnIndex}`]" @click="orderBy(item.name)">
-            <slot
-              v-if="item.customHeader"
-              :header-data="item"
-              :name="customHeaderName(item)"
-            />
-            <div v-if="item.sortable" :class="arrowsWrapper(item.name, css.arrowsWrapper)">
-              <div v-if="showOrderArrow(item, 'desc')" :class="css.arrowUp" />
-              <div v-if="showOrderArrow(item, 'asc')" :class="css.arrowDown" />
-            </div>
-          </div>
-          <!-- end header custom header -->
         </th>
       </tr>
     </thead>
@@ -107,7 +90,6 @@
         <th :colspan="headers.length" :class="css.tfootTd">
           <div :class="css.footer">
             <slot name="pagination"/>
-            <span style="width:700px; padding-left: 100px;"> User Count: {{ userCount }} </span>
           </div>
         </th>
       </tr>
@@ -131,21 +113,9 @@ export default {
       type: Boolean,
       default: false
     },
-    sortField: {
-      type: String,
-      default: null
-    },
-    sort: {
-      type: String,
-      default: null
-    },
     notFoundMsg: {
       type: String,
       default: null
-    },
-    trackBy: {
-      type: String,
-      default: 'id'
     },
     css: {
       type: Object,
@@ -164,7 +134,6 @@ export default {
         tfootTr: 'tfoot-tr',
         footer: 'footer',
         thWrapper: 'th-wrapper',
-        arrowsWrapper: 'arrows-wrapper',
         arrowUp: 'arrow-up',
         arrowDown: 'arrow-down',
         notFoundTr: 'not-found-tr',
@@ -177,29 +146,20 @@ export default {
     },
     defaultColumnWidth: {
       type: String,
-      default: '150px'
-    },
-    onlyShowOrderedArrow: {
-      type: Boolean,
-      default: false
+      default: '100px'
     },
     userCount: {
       type: Number,
       default: 0
     }
   },
-
   data: function () {
     return {
-      sortedField: this.sortField,
-      sortedDir: this.sort,
       notFoundMessage: this.notFoundMsg,
       loading: this.isLoading
     }
   },
-
   computed: {
-
     headers: function () {
       if (
         this.headerFields &&
@@ -232,41 +192,8 @@ export default {
   },
 
   methods: {
-    arrowsWrapper: function (field, className) {
-      if (this.sortedField === field && this.sortedDir) {
-        return `${className} centralized`
-      }
-      return className
-    },
-
-    updateData: function () {
-      const params = {
-        sortField: this.sortedField,
-        sort: this.sortedDir
-      }
-
-      this.$emit('on-update', params)
-    },
-
-    orderBy: function (field) {
-      if (this.isFieldSortable(field)) {
-        if (this.sortedField === field) {
-          this.sortedDir = this.sortedDir === 'asc' ? 'desc' : 'asc'
-        } else {
-          this.sortedDir = 'desc'
-          this.sortedField = field
-        }
-        this.updateData()
-      }
-    },
-
-    isFieldSortable: function (field) {
-      const foundHeader = this.headerFields.find(item => item.name === field)
-      return foundHeader && foundHeader.sortable
-    },
-
     headerItemClass: function (item, className = '') {
-      return item && item.sortable ? className : `${className} no-sortable`
+      return item ? className : `${className} no-sortable`
     },
 
     isFieldSpecial: field => field.indexOf('__') > -1,
@@ -336,17 +263,6 @@ export default {
         return { width: item.width || this.defaultColumnWidth }
       }
     },
-
-    customElementName: ({ customElement, name }) => typeof customElement === 'string' ? customElement : name,
-
-    customHeaderName: ({ customHeader, name }) => typeof customHeader === 'string' ? customHeader : `${name}:header`,
-
-    showOrderArrow: function (item, sortDir) {
-      if (this.onlyShowOrderedArrow) {
-        return this.sortedField === item.name && this.sortedDir !== sortDir
-      }
-      return (this.sortedField !== item.name) || (this.sortedField === item.name && this.sortedDir === sortDir)
-    }
   }
 }
 </script>
