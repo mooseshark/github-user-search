@@ -27,11 +27,17 @@
         :total-items="totalItems"
         :items-per-page="itemsPerPage"
         :css="paginationCss"
+        :page-info="pageInfo"
+        :user-count="userCount"
         @on-update="changePage"
         @update-current-page="updateCurrentPage"
+        @loadFirstPage="loadFirstPage"
+        @loadNextPage="loadNextPage($event)"
+        @loadPreviousPage="loadPreviousPage($event)"
+        @loadLastPage="loadLastPage"
       />
 
-      <!-- ItemsPerPage component as a slot, but could be drag out from Database element -->
+      <!-- ItemsPerPage component as a slot, but could be drag out from Database element-->
       <div class="items-per-page" slot="ItemsPerPage">
         <label>Items per page</label>
         <ItemsPerPageDropdown
@@ -41,6 +47,7 @@
           @on-update="updateItemsPerPage"
         />
       </div>
+
 
       <!-- Spinner element as slot used when is-loading attribute is true -->
       <Spinner slot="spinner"/>
@@ -254,12 +261,119 @@ import orderBy from 'lodash.orderby'
 
 import gql from 'graphql-tag';
 
-export const USER_SEARCH = gql`
+const USER_SEARCH = gql`
   query getUsers ($searchTerm: String!, $recordsToReturn: Int!) {
     search(query: $searchTerm, type: USER, first: $recordsToReturn) {
        nodes {
          ... on User {
-           id
+           login
+           email
+           location
+           name
+           url
+           twitterUsername
+           websiteUrl
+           avatarUrl
+           anyPinnableItems
+           bioHTML
+           companyHTML
+           followers {
+             totalCount
+           }
+           following {
+             totalCount
+           }
+           packages {
+             totalCount
+           }
+           projects {
+             totalCount
+           }
+           repositories {
+             totalCount
+             totalDiskUsage
+           }
+           starredRepositories {
+             totalCount
+           }
+           status {
+             message
+             emojiHTML
+           }
+           issues {
+             totalCount
+           }
+         }
+       }
+       pageInfo {
+         hasNextPage
+         hasPreviousPage
+         startCursor
+         endCursor
+       }
+       userCount
+     }
+  }`;
+
+const USER_SEARCH_NEXT = gql`
+  query getUsers ($searchTerm: String!, $recordsToReturn: Int! $cursorNext: String!) {
+    search(query: $searchTerm, type: USER, first: $recordsToReturn, after: $cursorNext) {
+       nodes {
+         ... on User {
+           login
+           email
+           location
+           name
+           url
+           twitterUsername
+           websiteUrl
+           avatarUrl
+           anyPinnableItems
+           bioHTML
+           companyHTML
+           followers {
+             totalCount
+           }
+           following {
+             totalCount
+           }
+           packages {
+             totalCount
+           }
+           projects {
+             totalCount
+           }
+           repositories {
+             totalCount
+             totalDiskUsage
+           }
+           starredRepositories {
+             totalCount
+           }
+           status {
+             message
+             emojiHTML
+           }
+           issues {
+             totalCount
+           }
+         }
+       }
+       pageInfo {
+         hasNextPage
+         hasPreviousPage
+         startCursor
+         endCursor
+       }
+       userCount
+     }
+  }`;
+
+const USER_SEARCH_PREVIOUS = gql`
+  query getUsers ($searchTerm: String!, $recordsToReturn: Int! $cursorPrevious: String!) {
+    search(query: $searchTerm, type: USER, first: $recordsToReturn, before: $cursorPrevious) {
+       nodes {
+         ... on User {
            login
            email
            location
@@ -310,6 +424,8 @@ export const USER_SEARCH = gql`
   }`;
 
 const initialData = [];
+
+let storedSearchTerm = '';
 
 export default {
   name: 'app',
@@ -461,13 +577,172 @@ export default {
       const userCount = this.search.userCount;
       return userCount ? userCount : 0;
     },
+    pageInfo: function() {
+      const pageInfo = this.search.pageInfo;
+      return pageInfo ? pageInfo : {};
+    },
   },
   methods: {
     onSearch: function (searchTerm) {
+      storedSearchTerm = searchTerm;
       this.$apollo.queries.search.refetch({
         searchTerm: searchTerm,
         recordsToReturn: 10
      });
+    },
+
+    loadFirstPage: function () {
+      console.log('First Page');
+      this.$apollo.queries.search.refetch();
+    },
+
+    loadNextPage: function (cursorNext) {
+      console.log('Next Page');
+      console.log(cursorNext);
+      this.$apollo.queries.search.fetchMore({
+        query: USER_SEARCH_NEXT,
+        variables: {
+          searchTerm: storedSearchTerm,
+          recordsToReturn: 10,
+          cursorNext: cursorNext
+        },
+        // Transform the previous result with new data
+        updateQuery: (previousResult, { fetchMoreResult }) => {
+          const newNodes = fetchMoreResult.search.nodes;
+          const newPageInfo = fetchMoreResult.search.pageInfo;
+          const newUserCount = fetchMoreResult.search.userCount;
+
+          return {
+            search: {
+              __typename: previousResult.search.__typename,
+              // Merging the tag list
+              nodes: newNodes,
+              pageInfo: newPageInfo,
+              userCount: newUserCount
+            },
+          }
+        },
+      })
+    },
+
+    loadPreviousPage: function (cursorPrevious) {
+      console.log('Pervious Page');
+      console.log(cursorPrevious);
+      // let test = {};
+      //
+      // this.$apollo.query({
+      //   query: USER_SEARCH_PREVIOUS,
+      //   variables: {
+      //     searchTerm: storedSearchTerm,
+      //     recordsToReturn: 10,
+      //     cursorPrevious: cursorPrevious
+      //   }
+      // }).then(data => {
+      //   console.log('data');
+      //   console.log(data);
+      //
+      //   const newNodes = data.data.search.nodes;
+      //   const newPageInfo = data.data.search.pageInfo;
+      //   const newUserCount = data.data.search.userCount;
+      //
+      //   test = {
+      //     search: {
+      //       __typename: data.data.search.__typename,
+      //       // Merging the tag list
+      //       nodes: newNodes,
+      //       pageInfo: newPageInfo,
+      //       userCount: newUserCount
+      //     },
+      //   }
+      // });
+
+      this.$apollo.query({
+        query: USER_SEARCH_PREVIOUS,
+        variables: {
+          searchTerm: storedSearchTerm,
+          recordsToReturn: 10,
+          cursorPrevious: cursorPrevious
+        }
+      }).then(data => {
+        this.$apollo.search = data.data.search;
+        this.$apollo.subscribe({
+          query: USER_SEARCH_PREVIOUS,
+          variables: {
+            searchTerm: storedSearchTerm,
+            recordsToReturn: 10,
+            cursorPrevious: cursorPrevious
+          }
+        }).subscribe({
+          next(data) {
+            if(data.data.search.length){
+              this.$apollo.search = data.data.search;
+            }
+          },
+          error(err) {
+            console.error("err", err);
+          }
+        });
+      });
+
+      // this.$apollo.queries.search.refetch({
+      //   query: USER_SEARCH_PREVIOUS,
+      //   variables: {
+      //     searchTerm: storedSearchTerm,
+      //     recordsToReturn: 10,
+      //     cursorPrevious: cursorPrevious
+      //   },
+      //   // Transform the previous result with new data
+      //   updateQuery: (previousResult, { fetchMoreResult }) => {
+      //     console.log(previousResult);
+      //     console.log(fetchMoreResult);
+      //     const newNodes = fetchMoreResult.search.nodes;
+      //     const newPageInfo = fetchMoreResult.search.pageInfo;
+      //     const newUserCount = fetchMoreResult.search.userCount;
+      //
+      //     return {
+      //       search: {
+      //         __typename: previousResult.search.__typename,
+      //         // Merging the tag list
+      //         nodes: newNodes,
+      //         pageInfo: newPageInfo,
+      //         userCount: newUserCount
+      //       },
+      //     }
+      //   },
+      // });
+
+      // this.$apollo.queries.search.fetchMore({
+      //   query: USER_SEARCH_PREVIOUS,
+      //   variables: {
+      //     searchTerm: storedSearchTerm,
+      //     recordsToReturn: 10,
+      //     cursorPrevious: cursorPrevious
+      //   },
+      //   // Transform the previous result with new data
+      //   updateQuery: (previousResult, { fetchMoreResult }) => {
+      //     console.log(previousResult);
+      //     console.log(fetchMoreResult);
+      //     const newNodes = fetchMoreResult.search.nodes;
+      //     const newPageInfo = fetchMoreResult.search.pageInfo;
+      //     const newUserCount = fetchMoreResult.search.userCount;
+      //
+      //     return {
+      //       search: {
+      //         __typename: previousResult.search.__typename,
+      //         // Merging the tag list
+      //         nodes: newNodes,
+      //         pageInfo: newPageInfo,
+      //         userCount: newUserCount
+      //       },
+      //     }
+      //   },
+      // })
+    },
+
+    loadLastPage: function () {
+      console.log(this.$apollo.queries.search);
+      console.log('Last Page');
+
     },
 
     dtUpdateSort: function ({ sortField, sort }) {

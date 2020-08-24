@@ -1,72 +1,57 @@
 <template>
   <ul class="v-datatable-light-pagination" :class="css.paginaton">
-    <li
-      v-if="moveFirstPage"
-      :class="[css.paginationItem, css.moveFirstPage]"
-    >
+
+    <li v-if="moveFirstPage">
       <button
         :disabled="isActionDisabled('firstPage')"
-        :class="css.pageBtn"
-        @click="changePage(1)"
+        class="btn btn-md btn-info"
+        @click="loadFirstPage()"
       >
         &lt;&lt;
       </button>
     </li>
-    <li
-      v-if="movePreviousPage"
-      :class="[css.paginationItem, css.movePreviousPage]"
-    >
+
+    <li v-if="movePreviousPage">
       <button
         :disabled="isActionDisabled('previousPage')"
-        :class="css.pageBtn"
-        @click="changePage(currPage - 1)"
+        class="btn btn-md btn-info"
+        @click="loadPreviousPage(pageInfo.startCursor)"
       >
         &lt;
       </button>
     </li>
-    <li
-      v-for="pageNr in qntPages"
-      :key="pageNr"
-      :class="pageClass(pageNr)"
-    >
-      <template v-if="pageNr !== currPage">
+
+    <li v-for="pageNr in qntPages" :key="pageNr">
         <button
-          :class="[css.pageBtn, css.pageNumber]"
-          @click="changePage(pageNr)"
+          class="btn btn-md btn-info"
         >
           {{ pageNr }}
         </button>
-      </template>
-      <template v-else>
-        {{ pageNr }}
-      </template>
     </li>
-    <li
-      v-if="moveNextPage"
-      :class="[css.paginationItem, css.moveNextPage]"
-    >
+
+    <li v-if="moveNextPage">
       <button
         :disabled="isActionDisabled('nextPage')"
-        :class="css.pageBtn"
-        @click="changePage(currPage + 1)"
+        class="btn btn-md btn-info"
+        @click="loadNextPage(pageInfo.endCursor)"
       >
         &gt;
       </button>
     </li>
-    <li
-      v-if="moveLastPage"
-      :class="[css.paginationItem, css.moveLastPage]"
-    >
+
+    <li v-if="moveLastPage">
       <button
         :disabled="isActionDisabled('lastPage')"
-        :class="css.pageBtn"
-        @click="changePage(lastPage)"
+        class="btn btn-md btn-info"
+        @click="loadLastPage()"
       >
         &gt;&gt;
       </button>
     </li>
+
   </ul>
 </template>
+
 <script>
 export default {
   name: 'DataTablePagination',
@@ -99,6 +84,19 @@ export default {
       type: Boolean,
       default: true
     },
+    pageInfo: {
+      type: Object,
+      default: () => ({
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: "",
+        endCursor: ""
+      })
+    },
+    userCount: {
+      type: Number,
+      default: 0
+    },
     css: {
       type: Object,
       default: () => ({
@@ -120,7 +118,8 @@ export default {
   },
   computed: {
     qntPages: function () {
-      const nrPages = this.lastPage
+      const nrPages = this.userCount > 1 ? Math.ceil(this.userCount / 10) : 1;
+
       if (nrPages > 4) {
         if (this.currPage <= 3) {
           return Array.apply(null, { length: 5 }).map((_, index) => index + 1)
@@ -133,6 +132,7 @@ export default {
         return Array.apply(null, { length: nrPages }).map((_, index) => index + 1)
       }
     },
+
     lastPage: function () {
       return Math.ceil(this.totalItems / this.perPage)
     }
@@ -155,17 +155,48 @@ export default {
         this.$emit('on-update', pageToMove)
       }
     },
-    isActionDisabled: function (action) {
-      switch (action) {
-        case 'firstPage':
-          return this.currPage === 1
-        case 'previousPage':
-          return this.currPage === 1
-        case 'lastPage':
-          return this.currPage === this.lastPage || !this.totalItems || this.currPage * this.itemsPerPage >= this.totalItems
-        case 'nextPage':
-          return this.currPage === this.lastPage || !this.totalItems || this.currPage * this.itemsPerPage >= this.totalItems
-      }
+
+    loadFirstPage: function () {
+      this.$emit('loadFirstPage');
+    },
+
+    loadNextPage: function (event) {
+      console.log('Next: ' + event)
+      console.log(this.pageInfo);
+      this.$emit('loadNextPage', event);
+    },
+
+    loadPreviousPage: function (event) {
+      console.log('Previous: ' + event)
+      console.log(this.pageInfo);
+      this.$emit('loadPreviousPage', event);
+    },
+
+    loadLastPage: function () {
+      console.log('Last');
+      this.$emit('loadLastPage');
+    },
+
+    isActionDisabled: function () {
+
+    if(this.pageInfo.hasNextPage && this.pageInfo.hasPreviousPage)
+      return false;
+
+    //  console.log(this.pageInfo.hasPreviousPage);
+    // if(action !== 'test'){
+    //   switch (action) {
+    //     case 'firstPage':
+    //       return this.currPage === 1
+    //     case 'previousPage':
+    //       return this.currPage === 1
+    //     case 'lastPage':
+    //       return this.currPage === this.lastPage || !this.totalItems || this.currPage * this.itemsPerPage >= this.totalItems
+    //     case 'nextPage':
+    //       return this.currPage === this.lastPage || !this.totalItems || this.currPage * this.itemsPerPage >= this.totalItems
+    //   }
+    // }
+
+      return false;
     },
     checkCurrentPageExist: function () {
       if (this.qntPages.indexOf(this.currPage) === -1) {

@@ -108,13 +108,14 @@
           <div :class="css.footer">
             <slot name="ItemsPerPage"/>
             <slot name="pagination"/>
-            <span style="width:200px"> User Count: {{ userCount }} </span>
+            <span style="width:700px; padding-left: 100px;"> User Count: {{ userCount }} </span>
           </div>
         </th>
       </tr>
     </tfoot>
   </table>
 </template>
+
 <script>
 export default {
   name: 'DataTable',
