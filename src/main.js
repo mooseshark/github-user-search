@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
 import DataTable from './components/DataTable'
-import ItemsPerPageDropdown from './components/ItemsPerPageDropdown'
 import Pagination from './components/Pagination'
 import SearchBar from './components/SearchBar'
 
@@ -20,7 +19,7 @@ Vue.use(VueApollo);
 Vue.config.productionTip = false
 const getHeaders = () => {
   const headers = {};
-  const token = '';
+  const token = '40c1e3464be6121efbda1ec4853d09e3c6fac631';
   if (token) {
     headers.authorization = `Bearer ${token}`;
   }
@@ -49,7 +48,6 @@ const apolloProvider = new VueApollo({
 
 export {
   DataTable,
-  ItemsPerPageDropdown,
   Pagination,
   SearchBar
 }

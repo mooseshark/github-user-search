@@ -1,54 +1,31 @@
 <template>
   <div id="app">
-    <h3 class="title">GitHub User Search</h3>
+    <h2 class="title"><strong>GitHub User Search</strong></h2>
 
     <SearchBar
+      :user-count="userCount"
       @onSearch="onSearch($event)"
     />
-
     <!-- Datatable -->
     <DataTable
       :header-fields="headerFields"
-      :sort-field="sortField"
-      :sort="sort"
       :data="search.nodes || []"
       :user-count="userCount"
       :is-loading="isLoading"
       :css="datatableCss"
-      not-found-msg="Items not found"
-      @on-update="dtUpdateSort"
+      not-found-msg="No Records Found"
       track-by="login"
     >
-
       <!-- Pagination component as a slot, but could be drag out from Database element -->
       <Pagination
         slot="pagination"
-        :page="currentPage"
-        :total-items="totalItems"
-        :items-per-page="itemsPerPage"
-        :css="paginationCss"
         :page-info="pageInfo"
         :user-count="userCount"
-        @on-update="changePage"
-        @update-current-page="updateCurrentPage"
         @loadFirstPage="loadFirstPage"
         @loadNextPage="loadNextPage($event)"
         @loadPreviousPage="loadPreviousPage($event)"
         @loadLastPage="loadLastPage"
       />
-
-      <!-- ItemsPerPage component as a slot, but could be drag out from Database element-->
-      <div class="items-per-page" slot="ItemsPerPage">
-        <label>Items per page</label>
-        <ItemsPerPageDropdown
-          :list-items-per-page="listItemsPerPage"
-          :items-per-page="itemsPerPage"
-          :css="itemsPerPageCss"
-          @on-update="updateItemsPerPage"
-        />
-      </div>
-
-
       <!-- Spinner element as slot used when is-loading attribute is true -->
       <Spinner slot="spinner"/>
     </DataTable>
@@ -68,82 +45,12 @@
   margin-bottom: 30px;
 }
 
-#app .items-per-page {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  color: #337ab7;
-}
-
-#app .items-per-page label {
-  margin: 0 15px;
-}
-
 /* Datatable CSS */
-
-#app .v-datatable-light .header-column-2 {
-  color: red;
-}
-
-#app .v-datatable-light .header-column-3 {
-  color: green;
-}
-
-#app .v-datatable-light .header-column-4 {
-  color: yellow;
-}
-
-#app .v-datatable-light .header-column-5 {
-  color: pink;
-}
-
-#app .v-datatable-light .header-column-6 {
-  color: blueviolet;
-}
-
-#app .v-datatable-light .row-2 {
-  color: goldenrod;
-}
-
-#app .v-datatable-light .row-2 .column-2{
-  color: purple;
-}
-
-#app .v-datatable-light .row-3 {
-  color: silver;
-}
-
-#app .v-datatable-light .row-5 .column-1, #app .v-datatable-light .row-5 .column-6 {
-  color: rosybrown;
-}
-
-#app .v-datatable-light .row-7 .column-4 {
-  color: steelblue;
-}
-
-#app .v-datatable-light .row-9 .column-5 {
-  color: springgreen;
-}
-
-#app .v-datatable-light .row-4 {
-  color: mediumturquoise;
-}
-
 .v-datatable-light .header-item {
   cursor: pointer;
-  color: #337ab7;
+  color: #ffffff;
+  background-color: #17a2b8;
   transition: color 0.15s ease-in-out;
-}
-
-.v-datatable-light .header-item:hover {
-  color: #ed9b19;
-}
-
-.v-datatable-light .header-item.no-sortable{
-  cursor: default;
-}
-.v-datatable-light .header-item.no-sortable:hover {
-  color: #337ab7;
 }
 
 .v-datatable-light .header-item .th-wrapper {
@@ -151,41 +58,6 @@
   width: 100%;
   height: 100%;
   font-weight: bold;
-}
-
-.v-datatable-light .header-item .th-wrapper .arrows-wrapper {
-  display: flex;
-  flex-direction: column;
-  margin-left: 10px;
-  justify-content: space-between;
-}
-
-.v-datatable-light .header-item .th-wrapper .arrows-wrapper.centralized {
-  justify-content: center;
-}
-
-.v-datatable-light .arrow {
-  transition: color 0.15s ease-in-out;
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-}
-
-.v-datatable-light .arrow.up {
-  border-bottom: 8px solid #337ab7;
-}
-
-.v-datatable-light .arrow.up:hover {
-  border-bottom: 8px solid #ed9b19;
-}
-
-.v-datatable-light .arrow.down {
-  border-top: 8px solid #337ab7;
-}
-
-.v-datatable-light .arrow.down:hover {
-  border-top: 8px solid #ed9b19;
 }
 
 .v-datatable-light .footer {
@@ -206,58 +78,14 @@
     width: 300px;
     height: 30px;
   }
-
-  .v-datatable-light-pagination .pagination-item {
-    width: 30px;
-    margin-right: 5px;
-    font-size: 16px;
-    transition: color 0.15s ease-in-out;
-  }
-
-  .v-datatable-light-pagination .pagination-item.selected {
-    color: #ed9b19;
-  }
-
-  .v-datatable-light-pagination .pagination-item .page-btn {
-    background-color: transparent;
-    outline: none;
-    border: none;
-    color: #337ab7;
-    transition: color 0.15s ease-in-out;
-  }
-
-  .v-datatable-light-pagination .pagination-item .page-btn:hover {
-    color: #ed9b19;
-  }
-
-  .v-datatable-light-pagination .pagination-item .page-btn:disabled{
-    cursor: not-allowed;
-    box-shadow: none;
-    opacity: .65;
-  }
   /* END PAGINATION CSS */
-
-  /* ITEMS PER PAGE DROPDOWN CSS */
-  .item-per-page-dropdown {
-    background-color: transparent;
-    min-height: 30px;
-    border: 1px solid #337ab7;
-    border-radius: 5px;
-    color: #337ab7;
-  }
-  .item-per-page-dropdown:hover {
-    cursor: pointer;
-  }
-  /* END ITEMS PER PAGE DROPDOWN CSS */
 </style>
 
 <script>
 import Spinner from 'vue-simple-spinner'
 import DataTable from '../src/components/DataTable.vue'
-import ItemsPerPageDropdown from '../src/components/ItemsPerPageDropdown.vue'
 import Pagination from '../src/components/Pagination.vue'
 import SearchBar from '../src/components/SearchBar.vue'
-import orderBy from 'lodash.orderby'
 
 import gql from 'graphql-tag';
 
@@ -423,7 +251,6 @@ const USER_SEARCH_PREVIOUS = gql`
      }
   }`;
 
-const initialData = [];
 
 let storedSearchTerm = '';
 
@@ -431,7 +258,6 @@ export default {
   name: 'app',
   components: {
     DataTable,
-    ItemsPerPageDropdown,
     Pagination,
     SearchBar,
     Spinner
@@ -520,7 +346,7 @@ export default {
         },
         {
           name: 'repositories.totalDiskUsage',
-          label: 'Total Repository Disk Usage',
+          label: 'Repository Disk Usage',
           sortable: true
         },
         {
@@ -547,29 +373,9 @@ export default {
         table: 'table table-bordered table-hover table-striped table-center',
         theadTr: 'header-item',
         thWrapper: 'th-wrapper',
-        arrowsWrapper: 'arrows-wrapper',
-        arrowUp: 'arrow up',
-        arrowDown: 'arrow down',
         footer: 'footer'
       },
-      paginationCss: {
-        paginationItem: 'pagination-item',
-        moveFirstPage: 'move-first-page',
-        movePreviousPage: 'move-previous-page',
-        moveNextPage: 'move-next-page',
-        moveLastPage: 'move-last-page',
-        pageBtn: 'page-btn'
-      },
-      itemsPerPageCss: {
-        select: 'item-per-page-dropdown'
-      },
       isLoading: false,
-      sort: 'asc',
-      sortField: 'login',
-      listItemsPerPage: [5, 10, 20, 50, 100],
-      itemsPerPage: 10,
-      currentPage: 1,
-      totalItems: 16
     }
   },
   computed: {
@@ -592,13 +398,10 @@ export default {
     },
 
     loadFirstPage: function () {
-      console.log('First Page');
       this.$apollo.queries.search.refetch();
     },
 
     loadNextPage: function (cursorNext) {
-      console.log('Next Page');
-      console.log(cursorNext);
       this.$apollo.queries.search.fetchMore({
         query: USER_SEARCH_NEXT,
         variables: {
@@ -606,7 +409,6 @@ export default {
           recordsToReturn: 10,
           cursorNext: cursorNext
         },
-        // Transform the previous result with new data
         updateQuery: (previousResult, { fetchMoreResult }) => {
           const newNodes = fetchMoreResult.search.nodes;
           const newPageInfo = fetchMoreResult.search.pageInfo;
@@ -615,7 +417,6 @@ export default {
           return {
             search: {
               __typename: previousResult.search.__typename,
-              // Merging the tag list
               nodes: newNodes,
               pageInfo: newPageInfo,
               userCount: newUserCount
@@ -626,151 +427,34 @@ export default {
     },
 
     loadPreviousPage: function (cursorPrevious) {
-      console.log('Pervious Page');
-      console.log(cursorPrevious);
-      // let test = {};
-      //
-      // this.$apollo.query({
-      //   query: USER_SEARCH_PREVIOUS,
-      //   variables: {
-      //     searchTerm: storedSearchTerm,
-      //     recordsToReturn: 10,
-      //     cursorPrevious: cursorPrevious
-      //   }
-      // }).then(data => {
-      //   console.log('data');
-      //   console.log(data);
-      //
-      //   const newNodes = data.data.search.nodes;
-      //   const newPageInfo = data.data.search.pageInfo;
-      //   const newUserCount = data.data.search.userCount;
-      //
-      //   test = {
-      //     search: {
-      //       __typename: data.data.search.__typename,
-      //       // Merging the tag list
-      //       nodes: newNodes,
-      //       pageInfo: newPageInfo,
-      //       userCount: newUserCount
-      //     },
-      //   }
-      // });
-
-      this.$apollo.query({
+      this.$apollo.queries.search.fetchMore({
         query: USER_SEARCH_PREVIOUS,
         variables: {
           searchTerm: storedSearchTerm,
           recordsToReturn: 10,
           cursorPrevious: cursorPrevious
-        }
-      }).then(data => {
-        this.$apollo.search = data.data.search;
-        this.$apollo.subscribe({
-          query: USER_SEARCH_PREVIOUS,
-          variables: {
-            searchTerm: storedSearchTerm,
-            recordsToReturn: 10,
-            cursorPrevious: cursorPrevious
-          }
-        }).subscribe({
-          next(data) {
-            if(data.data.search.length){
-              this.$apollo.search = data.data.search;
-            }
-          },
-          error(err) {
-            console.error("err", err);
-          }
-        });
-      });
+        },
+        updateQuery: (previousResult, { fetchMoreResult }) => {
+          const newNodes = fetchMoreResult.search.nodes;
+          const newPageInfo = fetchMoreResult.search.pageInfo;
+          const newUserCount = fetchMoreResult.search.userCount;
 
-      // this.$apollo.queries.search.refetch({
-      //   query: USER_SEARCH_PREVIOUS,
-      //   variables: {
-      //     searchTerm: storedSearchTerm,
-      //     recordsToReturn: 10,
-      //     cursorPrevious: cursorPrevious
-      //   },
-      //   // Transform the previous result with new data
-      //   updateQuery: (previousResult, { fetchMoreResult }) => {
-      //     console.log(previousResult);
-      //     console.log(fetchMoreResult);
-      //     const newNodes = fetchMoreResult.search.nodes;
-      //     const newPageInfo = fetchMoreResult.search.pageInfo;
-      //     const newUserCount = fetchMoreResult.search.userCount;
-      //
-      //     return {
-      //       search: {
-      //         __typename: previousResult.search.__typename,
-      //         // Merging the tag list
-      //         nodes: newNodes,
-      //         pageInfo: newPageInfo,
-      //         userCount: newUserCount
-      //       },
-      //     }
-      //   },
-      // });
-
-      // this.$apollo.queries.search.fetchMore({
-      //   query: USER_SEARCH_PREVIOUS,
-      //   variables: {
-      //     searchTerm: storedSearchTerm,
-      //     recordsToReturn: 10,
-      //     cursorPrevious: cursorPrevious
-      //   },
-      //   // Transform the previous result with new data
-      //   updateQuery: (previousResult, { fetchMoreResult }) => {
-      //     console.log(previousResult);
-      //     console.log(fetchMoreResult);
-      //     const newNodes = fetchMoreResult.search.nodes;
-      //     const newPageInfo = fetchMoreResult.search.pageInfo;
-      //     const newUserCount = fetchMoreResult.search.userCount;
-      //
-      //     return {
-      //       search: {
-      //         __typename: previousResult.search.__typename,
-      //         // Merging the tag list
-      //         nodes: newNodes,
-      //         pageInfo: newPageInfo,
-      //         userCount: newUserCount
-      //       },
-      //     }
-      //   },
-      // })
+          return {
+            search: {
+              __typename: previousResult.search.__typename,
+              nodes: newNodes,
+              pageInfo: newPageInfo,
+              userCount: newUserCount
+            },
+          }
+        },
+      })
     },
 
     loadLastPage: function () {
-      console.log(this.$apollo.queries.search);
       console.log('Last Page');
 
     },
-
-    dtUpdateSort: function ({ sortField, sort }) {
-      const sortedData = orderBy(initialData, [sortField], [sort])
-      const start = (this.currentPage - 1) * this.itemsPerPage
-      const end = this.currentPage * this.itemsPerPage
-      this.data = sortedData.slice(start, end)
-    },
-
-    updateItemsPerPage: function (itemsPerPage) {
-      this.itemsPerPage = itemsPerPage
-      if (itemsPerPage >= initialData.length) {
-        this.data = initialData
-      } else {
-        this.data = initialData.slice(0, itemsPerPage)
-      }
-    },
-
-    changePage: function (currentPage) {
-      this.currentPage = currentPage
-      const start = (currentPage - 1) * this.itemsPerPage
-      const end = currentPage * this.itemsPerPage
-      this.data = initialData.slice(start, end)
-    },
-
-    updateCurrentPage: function (currentPage) {
-      this.currentPage = currentPage
-    }
   }
 }
 </script>
