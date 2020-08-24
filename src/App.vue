@@ -16,7 +16,6 @@
       :is-loading="isLoading"
       :css="datatableCss"
       not-found-msg="Items not found"
-      @on-update="dtUpdateSort"
       track-by="login"
     >
 
@@ -24,29 +23,14 @@
       <Pagination
         slot="pagination"
         :page="currentPage"
-        :total-items="totalItems"
-        :items-per-page="itemsPerPage"
         :css="paginationCss"
         :page-info="pageInfo"
         :user-count="userCount"
-        @on-update="changePage"
-        @update-current-page="updateCurrentPage"
         @loadFirstPage="loadFirstPage"
         @loadNextPage="loadNextPage($event)"
         @loadPreviousPage="loadPreviousPage($event)"
         @loadLastPage="loadLastPage"
       />
-
-      <!-- ItemsPerPage component as a slot, but could be drag out from Database element-->
-      <div class="items-per-page" slot="ItemsPerPage">
-        <label>Items per page</label>
-        <ItemsPerPageDropdown
-          :list-items-per-page="listItemsPerPage"
-          :items-per-page="itemsPerPage"
-          :css="itemsPerPageCss"
-          @on-update="updateItemsPerPage"
-        />
-      </div>
 
 
       <!-- Spinner element as slot used when is-loading attribute is true -->
@@ -254,10 +238,8 @@
 <script>
 import Spinner from 'vue-simple-spinner'
 import DataTable from '../src/components/DataTable.vue'
-import ItemsPerPageDropdown from '../src/components/ItemsPerPageDropdown.vue'
 import Pagination from '../src/components/Pagination.vue'
 import SearchBar from '../src/components/SearchBar.vue'
-import orderBy from 'lodash.orderby'
 
 import gql from 'graphql-tag';
 
@@ -423,7 +405,6 @@ const USER_SEARCH_PREVIOUS = gql`
      }
   }`;
 
-const initialData = [];
 
 let storedSearchTerm = '';
 
@@ -431,7 +412,6 @@ export default {
   name: 'app',
   components: {
     DataTable,
-    ItemsPerPageDropdown,
     Pagination,
     SearchBar,
     Spinner
@@ -560,16 +540,10 @@ export default {
         moveLastPage: 'move-last-page',
         pageBtn: 'page-btn'
       },
-      itemsPerPageCss: {
-        select: 'item-per-page-dropdown'
-      },
       isLoading: false,
       sort: 'asc',
       sortField: 'login',
-      listItemsPerPage: [5, 10, 20, 50, 100],
-      itemsPerPage: 10,
       currentPage: 1,
-      totalItems: 16
     }
   },
   computed: {
@@ -743,29 +717,6 @@ export default {
       console.log(this.$apollo.queries.search);
       console.log('Last Page');
 
-    },
-
-    dtUpdateSort: function ({ sortField, sort }) {
-      const sortedData = orderBy(initialData, [sortField], [sort])
-      const start = (this.currentPage - 1) * this.itemsPerPage
-      const end = this.currentPage * this.itemsPerPage
-      this.data = sortedData.slice(start, end)
-    },
-
-    updateItemsPerPage: function (itemsPerPage) {
-      this.itemsPerPage = itemsPerPage
-      if (itemsPerPage >= initialData.length) {
-        this.data = initialData
-      } else {
-        this.data = initialData.slice(0, itemsPerPage)
-      }
-    },
-
-    changePage: function (currentPage) {
-      this.currentPage = currentPage
-      const start = (currentPage - 1) * this.itemsPerPage
-      const end = currentPage * this.itemsPerPage
-      this.data = initialData.slice(start, end)
     },
 
     updateCurrentPage: function (currentPage) {

@@ -102,11 +102,10 @@
       </template>
       <!-- end table not found row -->
     </tbody>
-    <tfoot v-if="hasSlots" :class="css.tfoot">
+    <tfoot :class="css.tfoot">
       <tr :class="css.tfootTr">
         <th :colspan="headers.length" :class="css.tfootTd">
           <div :class="css.footer">
-            <slot name="ItemsPerPage"/>
             <slot name="pagination"/>
             <span style="width:700px; padding-left: 100px;"> User Count: {{ userCount }} </span>
           </div>
@@ -200,12 +199,6 @@ export default {
   },
 
   computed: {
-    hasSlots: function () {
-      return (
-        this.$slots.pagination !== undefined ||
-        this.$slots.ItemsPerPage !== undefined
-      )
-    },
 
     headers: function () {
       if (

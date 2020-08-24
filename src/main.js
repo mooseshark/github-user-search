@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
 import DataTable from './components/DataTable'
-import ItemsPerPageDropdown from './components/ItemsPerPageDropdown'
 import Pagination from './components/Pagination'
 import SearchBar from './components/SearchBar'
 
@@ -49,7 +48,6 @@ const apolloProvider = new VueApollo({
 
 export {
   DataTable,
-  ItemsPerPageDropdown,
   Pagination,
   SearchBar
 }
