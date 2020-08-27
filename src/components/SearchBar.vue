@@ -31,6 +31,7 @@
 </template>
 
 <script>
+
 export default {
   name: 'SearchBar',
   data: function() {
@@ -44,7 +45,6 @@ export default {
     }
   },
   methods: {
-
     onSearch: function (event) {
       this.$emit('onSearch', event);
     },

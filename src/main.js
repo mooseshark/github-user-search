@@ -19,7 +19,7 @@ Vue.use(VueApollo);
 Vue.config.productionTip = false
 const getHeaders = () => {
   const headers = {};
-  const token = '40c1e3464be6121efbda1ec4853d09e3c6fac631';
+  const token = 'be2aec6049fc383eacb4916e3644d69b109711a4';
   if (token) {
     headers.authorization = `Bearer ${token}`;
   }
@@ -38,7 +38,6 @@ const client = new ApolloClient({
   cache: new InMemoryCache({
     fragmentMatcher,
     addTypename: true
-
   })
 });
 
