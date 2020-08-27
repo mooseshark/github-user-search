@@ -230,8 +230,8 @@ export default {
 
     appendHTTP: string => {
       if(!string) return ;
-      if(string.indexOf('https://') === -1 || string.indexOf('http://') === -1){
-          string = 'http://' + string;
+      if(string.indexOf('http://') === -1 && string.indexOf('https://') === -1){
+        string = 'http://' + string;
       }
       return string;
     },

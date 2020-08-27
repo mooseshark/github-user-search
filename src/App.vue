@@ -199,9 +199,9 @@ const USER_SEARCH_NEXT = gql`
 
 const USER_SEARCH_PREVIOUS = gql`
   query getUsers ($searchTerm: String!, $recordsToReturn: Int! $cursorPrevious: String!) {
-    search(query: $searchTerm, type: USER, first: $recordsToReturn, before: $cursorPrevious) {
+    search(query: $searchTerm, type: USER, first: $recordsToReturn, before: $cursorPrevious)  {
        nodes {
-         ... on User {
+         ... on User @connection(key: "User", filter: ["login"]) {
            login
            email
            location
@@ -250,7 +250,6 @@ const USER_SEARCH_PREVIOUS = gql`
        userCount
      }
   }`;
-
 
 let storedSearchTerm = '';
 
@@ -366,8 +365,6 @@ export default {
         },
         '__slot:actions'
       ],
-      type: "private",
-      filterType: "all",
       search: [],
       datatableCss: {
         table: 'table table-bordered table-hover table-striped table-center',

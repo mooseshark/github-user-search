@@ -15,7 +15,7 @@
       <button
         :disabled="isActionDisabled('previousPage')"
         class="btn btn-md btn-info"
-        @click="loadPreviousPage(pageInfo.startCursor)"
+        @click="loadPreviousPage(previousCursor[previousCursor.length - 1])"
       >
         &lt;
       </button>
@@ -32,7 +32,6 @@
 
     <li>
       <button
-        :disabled="isActionDisabled('nextPage')"
         class="btn btn-md btn-info"
         @click="loadNextPage(pageInfo.endCursor)"
       >
@@ -58,11 +57,11 @@
         User Count: {{ userCount }}
       </button>
     </li>
-
   </ul>
 </template>
 
 <script>
+
 export default {
   name: 'DataTablePagination',
   props: {
@@ -82,7 +81,8 @@ export default {
   },
   data: function () {
     return {
-      pageNumber: 1
+      pageNumber: 1,
+      previousCursor: []
     }
   },
   computed: {
@@ -97,11 +97,13 @@ export default {
     },
 
     loadNextPage: function (event) {
+      this.previousCursor.push(this.pageInfo.startCursor);
       this.pageNumber++;
       this.$emit('loadNextPage', event);
     },
 
     loadPreviousPage: function (event) {
+      this.previousCursor.pop();
       this.pageNumber--;
       this.$emit('loadPreviousPage', event);
     },
